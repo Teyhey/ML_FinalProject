@@ -22,6 +22,17 @@ public class FinalProject {
 														// to a row from the
 														// .csv file
 
+	// We perform a 70/30 split on 2750 instances of the data
+	// this is 50% of 5500 instances
+	ArrayList<Data> trainingSplit = new ArrayList<Data>();
+	ArrayList<Data> validationSplit = new ArrayList<Data>();
+
+	// Since the provided test.csv doesn't have a class attribute
+	// we have to resort to splitting up the training data.
+	// We will put 50% of the Data in here, the other 50% goes
+	// toward the 70/30 split above.
+	ArrayList<Data> testSplit = new ArrayList<Data>();
+
 	// ********************************************************
 	// FUNCTIONS
 	// ********************************************************
@@ -45,15 +56,14 @@ public class FinalProject {
 		double networkFeature2;
 		double networkFeature3;
 
-
 		// We don't want the column names
 		System.out.println(scan.next());
-		
+
 		while (scan.hasNext()) {
-	
+
 			String all = scan.next();
 			String[] allSplit = all.split(",");
-			
+
 			choice = Integer.parseInt(allSplit[0]);
 			name = "A"; // A gets read before B
 			followerCount = Long.parseLong(allSplit[1]);
@@ -90,7 +100,7 @@ public class FinalProject {
 
 			Data d = new Data(choice, a, b);
 			allRows.add(d);
-			
+
 		} // while
 
 	} // readFile
@@ -100,24 +110,54 @@ public class FinalProject {
 
 	} // populateTrainingSet
 
-	// This method populates the test set using the list of testset files.
-	public void populateTestSet(List<File> filePath) throws FileNotFoundException {
+	// This method populates the test set by splitting the data by 50%.
+	public void populateSets() {
+
+		// populates the testSet
+		for (int u = (allRows.size() / 2); u < allRows.size(); u++) {
+			testSplit.add(allRows.get(u));
+		} // for
+
+		int cap = 2750;
+		int split70 = (int) (2750 * .70); // = 1,925
+		int split30 = (int) (2750 * .30); // = 825
+		ArrayList<Data> mixer = new ArrayList<Data>();
+
+		// We only want the other half not used by the testSplit
+		for (int s = 0; s < cap; s++) {
+			mixer.add(allRows.get(s));
+		} // for
+
+		// populates the trainingSet
+		for (int p = 0; p < split70; p++) {
+			Collections.shuffle(mixer);
+			trainingSplit.add(mixer.get(p));
+		} // for
+
+		// populates the validationSet
+		for (int i = trainingSplit.size(); i < mixer.size(); i++) {
+			validationSplit.add(mixer.get(i));
+		} // for
 
 	} // populateTestSet
 
 	public void dataSplit(ArrayList<ArrayList<Integer>> shuffledTraining) {
 
 	}
-	
+
 	// Main
-	public static void main(String[] args) throws FileNotFoundException{
+	public static void main(String[] args) throws FileNotFoundException {
 		String path = "Data/train.csv";
 		FinalProject algorithm1 = new FinalProject();
 		algorithm1.readFile(path);
 		System.out.println("Size of Data list: " + algorithm1.allRows.size());
 		System.out.println("Size of A list: " + algorithm1.A.size());
 		System.out.println("Size of B list: " + algorithm1.B.size());
-		
+		algorithm1.populateSets();
+		System.out.println("Size of test list: " + algorithm1.testSplit.size());
+		System.out.println("Size of training list: " + algorithm1.trainingSplit.size());
+		System.out.println("Size of validation list: " + algorithm1.validationSplit.size());
+
 	}
 
 }
