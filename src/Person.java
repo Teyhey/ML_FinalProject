@@ -12,6 +12,7 @@ public class Person {
 	double networkFeature1;
 	double networkFeature2;
 	double networkFeature3;
+	double inflentialProb;
 	
 	
 	public Person(String name, long followerCount, long followingCount, long listedCount, double mentionsRecieved,
@@ -30,6 +31,7 @@ public class Person {
 		this.networkFeature1 = networkFeature1;
 		this.networkFeature2 = networkFeature2;
 		this.networkFeature3 = networkFeature3;
+		this.inflentialProb = 0;
 	} // constructor
 
 

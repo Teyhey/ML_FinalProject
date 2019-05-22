@@ -32,6 +32,13 @@ public class FinalProject {
 	// We will put 50% of the Data in here, the other 50% goes
 	// toward the 70/30 split above.
 	ArrayList<Data> testSplit = new ArrayList<Data>();
+	
+	
+	// Tells who is most influential row by row
+	ArrayList<Boolean> results = new ArrayList<Boolean>();
+	
+	int totalChoice1 = 0;
+	int totalChoice0 = 0;
 
 	// ********************************************************
 	// FUNCTIONS
@@ -65,6 +72,15 @@ public class FinalProject {
 			String[] allSplit = all.split(",");
 
 			choice = Integer.parseInt(allSplit[0]);
+			
+			if(choice == 1) {//A more Influential
+				totalChoice1++;
+			}
+			
+			if(choice == 0) {//B more Influential
+				totalChoice0++;
+			}
+			
 			name = "A"; // A gets read before B
 			followerCount = Long.parseLong(allSplit[1]);
 			followingCount = Long.parseLong(allSplit[2]);
@@ -143,19 +159,144 @@ public class FinalProject {
 
 	public void trainMultimonial() {
 
+		// The total counts that determine influentialness
+		double aSum_Counts = 0;
+		double bSum_Counts = 0;
+
+		// Computing conditonal probabilty
+		for (Data d : allRows) {
+			aSum_Counts += (double) d.A.mentionsRecieved + d.A.followerCount + d.A.retweetsRecieved;
+			bSum_Counts += (double) d.B.mentionsRecieved + d.B.followerCount + d.B.retweetsRecieved;
+		}
+
+		for (Data d : allRows) {
+			d.A.inflentialProb = (double) (d.A.mentionsRecieved + d.A.followerCount + d.A.retweetsRecieved + 1)
+					/ aSum_Counts + 1;
+			d.B.inflentialProb = (double) (d.B.mentionsRecieved + d.B.followerCount + d.B.retweetsRecieved + 1)
+					/ bSum_Counts + 1;
+			System.out.println("Person A prob: " + d.A.inflentialProb);
+			System.out.println("Person B prob: " + d.B.inflentialProb);
+		}
+
 	}
 
 	public double[] applyMultimonial(Data d) {
 
-		return null;
+		double[] classScores = new double[2];
+
+		int N = allRows.size();
+		double priorA = (double) totalChoice1 / N;//choice 1 A more influential
+		double priorB = (double) totalChoice0 / N;//choice 0 B more influential
+		
+		
+		System.out.println("Prior A: " + priorA);
+		System.out.println("Prior B: " + priorB);
+
+		double personAScore = (double) Math.log(priorA);
+		double personBScore = (double) Math.log(priorB);
+
+		System.out.println("PersonA Score [Before]: " + personAScore);
+		System.out.println("PersonB Score [Before]: " + personBScore);
+
+		// The totals needed
+		double aSum_Counts = (double) d.A.mentionsRecieved + d.A.followerCount + d.A.retweetsRecieved;
+		double bSum_Counts = (double) d.B.mentionsRecieved + d.B.followerCount + d.B.retweetsRecieved;
+
+		// We check if
+		if (Math.log(d.A.inflentialProb) > 0) {
+			d.A.inflentialProb = (double) 1 / 1 + A.size();
+			personAScore += (double) Math.log(d.A.inflentialProb * aSum_Counts);
+
+		}
+
+		if (Math.log(d.B.inflentialProb) > 0) {
+			d.B.inflentialProb = (double) 1 / 1 + B.size();
+			personBScore += (double) Math.log(d.B.inflentialProb * bSum_Counts);
+
+		}
+
+		classScores[0] = personAScore;
+		classScores[1] = personBScore;
+		
+		System.out.println("PersonA Score [After]: " + personAScore);
+		System.out.println("PersonB Score [After]: " + personBScore);
+
+		return classScores;
 	}
 
 	public boolean classification(Data d) {
+
+		double[] sz = applyMultimonial(d);
+		boolean influential = false;
+		double maxScore = 0;
+
+		// If A has a higher score than they are more influential
+		if (sz[0] > sz[1]) {
+			influential = true; // The personA is marked as influential.
+			results.add(influential);
+			return influential;
+		} // if
+
+		// If B score is > A score than B is more influential
+		if (sz[0] < sz[1]) {
+			influential = false; // The personA is marked as less influential
+			results.add(influential);
+			return influential;
+		} // if
+		
 		return (Boolean) null;
+
 	}
 
 	public String reportAccuracy() {
-		return null;
+		
+		String outcome = "";
+		double percentageOfAInfluential = 0;
+		double percentageOfBInfluential = 0;
+		
+		int correctAInfluential = 0;
+		int correctBInfluential = 0;
+		int wrongAInfluential = 0;
+		int wrongBInfluential = 0;
+		
+		for(int s = 0; s < allRows.size(); s++) {// choice 0 = B more influential, Choice 1 = A more Influential
+			
+			// Person A is tagged as influential but we classified it as wrong
+			if(allRows.get(s).choice == 1 && results.get(s) == false) {
+				wrongAInfluential++;
+			}
+			
+			// Person B is tagged as influential and we classified it as such
+			if(allRows.get(s).choice == 0 && results.get(s) == false) {
+				correctBInfluential++;
+			}
+			
+			// Person A is tagged as influential and we classified it as such
+			if(allRows.get(s).choice == 1 && results.get(s) == true) {
+				correctAInfluential++;
+			}
+			
+			// Person B is tagged as influential but we classified it as wrong
+			if(allRows.get(s).choice == 0 && results.get(s) == true) {
+				wrongBInfluential++;
+			}
+			
+		} // for
+		
+		percentageOfAInfluential = (double) correctAInfluential /  A.size();	
+		percentageOfBInfluential = (double) correctBInfluential / B.size();	
+		
+		System.out.println("Correct AInfluential: " + correctAInfluential);
+		System.out.println("Correct BInfluential: " + correctBInfluential);
+		System.out.println("Wrong AInfluential: " + wrongAInfluential);
+		System.out.println("Wrong BInfluential: " + wrongBInfluential);
+		System.out.println("Percentage AInfluential: " + percentageOfAInfluential * 100);
+		System.out.println("Percentage BInfluential: " + percentageOfBInfluential * 100);
+
+		outcome = "The percentage of Person A being labeled as Influential: " + percentageOfAInfluential * 100 + "\n"
+				+ "The percentage of Person B being labeled as Influential: " + percentageOfBInfluential * 100;
+		return outcome;
+		
 	}
 
 	// ********************************************************
@@ -166,14 +307,10 @@ public class FinalProject {
 	
 	
 	
+	
 	// ********************************************************
 	// PERCEPTRON
 	// ********************************************************
-	
-	
-	
-	
-	
 
 	// ********************************************************
 	// MAIN
@@ -191,7 +328,17 @@ public class FinalProject {
 		System.out.println("Size of test list: " + algorithm1.testSplit.size());
 		System.out.println("Size of training list: " + algorithm1.trainingSplit.size());
 		System.out.println("Size of validation list: " + algorithm1.validationSplit.size());
+		algorithm1.trainMultimonial();
 
+		for(Data d : algorithm1.allRows) {
+			algorithm1.applyMultimonial(d);
+		}
+		
+		for(Data d : algorithm1.allRows) {
+			algorithm1.classification(d);
+		}
+		
+		System.out.println(algorithm1.reportAccuracy());
 	}
 
 }
