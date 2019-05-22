@@ -14,6 +14,7 @@ public class FinalProject {
 	// VARIABLES
 	// ********************************************************
 
+	// ------------------ NAIVE BAYES VARIABLES ------------------
 	ArrayList<Person> A = new ArrayList<Person>(); // All person A data goes
 													// here
 	ArrayList<Person> B = new ArrayList<Person>(); // All person B data goes
@@ -22,23 +23,27 @@ public class FinalProject {
 														// to a row from the
 														// .csv file
 
+	// Tells who is most influential row by row
+	ArrayList<Boolean> results = new ArrayList<Boolean>();
+
+	int totalChoice1 = 0;
+	int totalChoice0 = 0;
+
+	// ------------------ LOGISTIC REGRESSION VARIABLES ------------------
+	public static double learningRate;
+	public ArrayList<Double> weights;
 	// We perform a 70/30 split on 2750 instances of the data
 	// this is 50% of 5500 instances
 	ArrayList<Data> trainingSplit = new ArrayList<Data>();
 	ArrayList<Data> validationSplit = new ArrayList<Data>();
+
+	// Do we need a dictionary???
 
 	// Since the provided test.csv doesn't have a class attribute
 	// we have to resort to splitting up the training data.
 	// We will put 50% of the Data in here, the other 50% goes
 	// toward the 70/30 split above.
 	ArrayList<Data> testSplit = new ArrayList<Data>();
-	
-	
-	// Tells who is most influential row by row
-	ArrayList<Boolean> results = new ArrayList<Boolean>();
-	
-	int totalChoice1 = 0;
-	int totalChoice0 = 0;
 
 	// ********************************************************
 	// FUNCTIONS
@@ -72,15 +77,15 @@ public class FinalProject {
 			String[] allSplit = all.split(",");
 
 			choice = Integer.parseInt(allSplit[0]);
-			
-			if(choice == 1) {//A more Influential
+
+			if (choice == 1) {// A more Influential
 				totalChoice1++;
 			}
-			
-			if(choice == 0) {//B more Influential
+
+			if (choice == 0) {// B more Influential
 				totalChoice0++;
 			}
-			
+
 			name = "A"; // A gets read before B
 			followerCount = Long.parseLong(allSplit[1]);
 			followingCount = Long.parseLong(allSplit[2]);
@@ -185,10 +190,9 @@ public class FinalProject {
 		double[] classScores = new double[2];
 
 		int N = allRows.size();
-		double priorA = (double) totalChoice1 / N;//choice 1 A more influential
-		double priorB = (double) totalChoice0 / N;//choice 0 B more influential
-		
-		
+		double priorA = (double) totalChoice1 / N;// choice 1 A more influential
+		double priorB = (double) totalChoice0 / N;// choice 0 B more influential
+
 		System.out.println("Prior A: " + priorA);
 		System.out.println("Prior B: " + priorB);
 
@@ -217,7 +221,7 @@ public class FinalProject {
 
 		classScores[0] = personAScore;
 		classScores[1] = personBScore;
-		
+
 		System.out.println("PersonA Score [After]: " + personAScore);
 		System.out.println("PersonB Score [After]: " + personBScore);
 
@@ -243,49 +247,49 @@ public class FinalProject {
 			results.add(influential);
 			return influential;
 		} // if
-		
+
 		return (Boolean) null;
 
 	}
 
 	public String reportAccuracy() {
-		
+
 		String outcome = "";
 		double percentageOfAInfluential = 0;
 		double percentageOfBInfluential = 0;
-		
+
 		int correctAInfluential = 0;
 		int correctBInfluential = 0;
 		int wrongAInfluential = 0;
 		int wrongBInfluential = 0;
-		
-		for(int s = 0; s < allRows.size(); s++) {// choice 0 = B more influential, Choice 1 = A more Influential
-			
+
+		for (int s = 0; s < allRows.size(); s++) {// choice 0 = B more influential, Choice 1 = A more Influential
+
 			// Person A is tagged as influential but we classified it as wrong
-			if(allRows.get(s).choice == 1 && results.get(s) == false) {
+			if (allRows.get(s).choice == 1 && results.get(s) == false) {
 				wrongAInfluential++;
 			}
-			
+
 			// Person B is tagged as influential and we classified it as such
-			if(allRows.get(s).choice == 0 && results.get(s) == false) {
+			if (allRows.get(s).choice == 0 && results.get(s) == false) {
 				correctBInfluential++;
 			}
-			
+
 			// Person A is tagged as influential and we classified it as such
-			if(allRows.get(s).choice == 1 && results.get(s) == true) {
+			if (allRows.get(s).choice == 1 && results.get(s) == true) {
 				correctAInfluential++;
 			}
-			
+
 			// Person B is tagged as influential but we classified it as wrong
-			if(allRows.get(s).choice == 0 && results.get(s) == true) {
+			if (allRows.get(s).choice == 0 && results.get(s) == true) {
 				wrongBInfluential++;
 			}
-			
+
 		} // for
-		
-		percentageOfAInfluential = (double) correctAInfluential /  A.size();	
-		percentageOfBInfluential = (double) correctBInfluential / B.size();	
-		
+
+		percentageOfAInfluential = (double) correctAInfluential / A.size();
+		percentageOfBInfluential = (double) correctBInfluential / B.size();
+
 		System.out.println("Correct AInfluential: " + correctAInfluential);
 		System.out.println("Correct BInfluential: " + correctBInfluential);
 		System.out.println("Wrong AInfluential: " + wrongAInfluential);
@@ -296,16 +300,102 @@ public class FinalProject {
 		outcome = "The percentage of Person A being labeled as Influential: " + percentageOfAInfluential * 100 + "\n"
 				+ "The percentage of Person B being labeled as Influential: " + percentageOfBInfluential * 100;
 		return outcome;
-		
+
 	}
 
 	// ********************************************************
 	// LOGISTIC REGRESSION
 	// ********************************************************
 
-	
-	
-	
+	// This method populates the necessary weights
+	public void populateWeights() {
+		for (int i = 0; i < dictionary.size() + 1; i++) {
+			weights.add(0.1);
+		}
+	} // populateWeights
+
+	public void clearWeights() {
+		int index = 0;
+		for (Double weight : weights) {
+			weights.set(index, 0.1);
+			index++;
+		}
+	}
+
+	// Sigmoid function: S(x) = 1/(1+e^-x)
+	public static double sigmoid(double x) {
+		double result = 1.0 / (1.0 + Math.exp(-x));
+		return result;
+	} // sigmoid
+
+	// Probability = w0 + sum (from 1 to n) wi * Xi
+	public static double calculateProbability(ArrayList<Double> weights, ArrayList<Integer> instance) {
+		double result = weights.get(0);
+		for (int i = 1; i < weights.size(); i++) {
+			result += weights.get(i) * instance.get(i - 1);
+		}
+		return result;
+	} // calculateProbability
+
+	public double gradientAscent(double weight, double x, double observed, ArrayList<Integer> instance,
+			ArrayList<Double> weights) {
+		double newWeight = weight + (learningRate * x * (observed - sigmoid(calculateProbability(weights, instance))));
+		return newWeight;
+	}
+
+	// L2 = learningRate * Lambda * wi
+	public static double L2(double lambda, double weight) {
+		double regularization = learningRate * lambda * weight;
+		return regularization;
+	} // L2
+
+	public void train() {
+
+	}
+
+	public int bestAccuracy(ArrayList<Double> accuracyArray) {
+		int tempIndex = 0;
+		int bestIndex = 0;
+		double tempAccuracy = 0;
+		for (double bestAccuracy : accuracyArray) {
+			if (bestAccuracy > tempAccuracy) {
+				tempAccuracy = bestAccuracy;
+				bestIndex = tempIndex;
+			}
+			tempIndex++;
+		}
+		return bestIndex;
+	}
+
+	// Classification rule:
+	public int classify(ArrayList<Double> weights, ArrayList<Integer> instance) {
+		int spam = 0;
+		// Pr[yi=1|xi] = 1/(1 + exp(w0 + Sum(wj * xi,j)))
+		double probability1 = sigmoid(calculateProbability(weights, instance));
+		// If Pr[yi=1|xi] >= .50 then its spam based on the classification rule
+		if (probability1 >= .50) {
+			spam = 1;
+		}
+		return spam;
+	} // classify
+
+	// Checks the accuracy of the test data set
+	// The function iterates through all emails in the test set, classifies each
+	// based on the weights from our trained model
+	// then does simple matching (compare predicted classification with actual/known
+	// labels) to calculate how accurate the model was at predicting
+	public double checkAccuracy(ArrayList<ArrayList<Integer>> dataSet) {
+		int match = 0;
+		for (int i = 0; i < dataSet.size(); i++) {
+			if (dataSet.get(i).get(weights.size() - 1) == classify(weights, dataSet.get(i))) {
+				match++;
+			}
+		}
+		double accuracy = ((double) match / (double) dataSet.size());
+		return accuracy;
+
+	} // checkAccuracy
+
 	
 	
 	// ********************************************************
@@ -330,14 +420,14 @@ public class FinalProject {
 		System.out.println("Size of validation list: " + algorithm1.validationSplit.size());
 		algorithm1.trainMultimonial();
 
-		for(Data d : algorithm1.allRows) {
+		for (Data d : algorithm1.allRows) {
 			algorithm1.applyMultimonial(d);
 		}
-		
-		for(Data d : algorithm1.allRows) {
+
+		for (Data d : algorithm1.allRows) {
 			algorithm1.classification(d);
 		}
-		
+
 		System.out.println(algorithm1.reportAccuracy());
 	}
 
