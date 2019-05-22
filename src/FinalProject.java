@@ -77,6 +77,7 @@ public class FinalProject {
 			networkFeature1 = Double.parseDouble(allSplit[9]);
 			networkFeature2 = Double.parseDouble(allSplit[10]);
 			networkFeature3 = Double.parseDouble(allSplit[11]);
+
 			Person a = new Person(name, followerCount, followingCount, listedCount, mentionsRecieved, retweetsRecieved,
 					mentionsSent, retweetsSent, postsCount, networkFeature1, networkFeature2, networkFeature3);
 			A.add(a);
@@ -104,11 +105,6 @@ public class FinalProject {
 		} // while
 
 	} // readFile
-
-	// This method populates the training set from the list of files.
-	public void populateTrainingSet(List<File> filePath) throws FileNotFoundException {
-
-	} // populateTrainingSet
 
 	// This method populates the test set by splitting the data by 50%.
 	public void populateSets() {
@@ -139,11 +135,49 @@ public class FinalProject {
 			validationSplit.add(mixer.get(i));
 		} // for
 
-	} // populateTestSet
+	} // populateSets
 
-	public void dataSplit(ArrayList<ArrayList<Integer>> shuffledTraining) {
+	// ********************************************************
+	// NAIVE BAYES
+	// ********************************************************
+
+	public void trainMultimonial() {
 
 	}
+
+	public double[] applyMultimonial(Data d) {
+
+		return null;
+	}
+
+	public boolean classification(Data d) {
+		return (Boolean) null;
+	}
+
+	public String reportAccuracy() {
+		return null;
+	}
+
+	// ********************************************************
+	// LOGISTIC REGRESSION
+	// ********************************************************
+
+	
+	
+	
+	
+	// ********************************************************
+	// PERCEPTRON
+	// ********************************************************
+	
+	
+	
+	
+	
+
+	// ********************************************************
+	// MAIN
+	// ********************************************************
 
 	// Main
 	public static void main(String[] args) throws FileNotFoundException {
