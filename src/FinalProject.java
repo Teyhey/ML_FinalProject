@@ -349,11 +349,11 @@ public class FinalProject {
 		return regularization;
 	} // L2
 
-	public void train() {
+	public void trainLogisticRegression() {
 
 	}
 
-	public int bestAccuracy(ArrayList<Double> accuracyArray) {
+	public int bestAccuracyLogisticRegression(ArrayList<Double> accuracyArray) {
 		int tempIndex = 0;
 		int bestIndex = 0;
 		double tempAccuracy = 0;
@@ -384,7 +384,7 @@ public class FinalProject {
 	// based on the weights from our trained model
 	// then does simple matching (compare predicted classification with actual/known
 	// labels) to calculate how accurate the model was at predicting
-	public double checkAccuracy(ArrayList<ArrayList<Integer>> dataSet) {
+	public double checkAccuracyLogisticRegression(ArrayList<ArrayList<Integer>> dataSet) {
 		int match = 0;
 		for (int i = 0; i < dataSet.size(); i++) {
 			if (dataSet.get(i).get(weights.size() - 1) == classify(weights, dataSet.get(i))) {
@@ -402,6 +402,87 @@ public class FinalProject {
 	// PERCEPTRON
 	// ********************************************************
 
+	
+	public int calculatePerceptron(ArrayList<Double> weights, ArrayList<Integer> instance) {
+		double result = weights.get(0);
+		for (int i = 1; i < weights.size(); i++) {
+			result += weights.get(i) * instance.get(i - 1);
+		}
+		if (result > 0.0) {
+			return 1;
+		}
+		else {
+			return -1;
+		}
+	}
+	
+	public double perceptronRule(double weight, double x, double observed, ArrayList<Integer> instance,
+			ArrayList<Double> weights) {
+		double newWeight = weight + learningRate * x * (observed - (double) calculatePerceptron(weights, instance));
+		return newWeight;
+	}
+	
+	// L2 = learningRate * Lambda * wi
+	public static double L2P(double lambda, double weight) {
+		double regularization = learningRate * lambda * weight;
+		return regularization;
+	} // L2P
+	
+	
+	public boolean hasConverged(ArrayList<Double> accuracyArray) {
+		if(accuracyArray.size() >= 3) {
+			double p1 = accuracyArray.get(accuracyArray.size()-1);
+			double p2 = accuracyArray.get(accuracyArray.size()-2);
+			double p3 = accuracyArray.get(accuracyArray.size()-3);
+			
+			double within = 0.0001; // Can change this
+			
+			double mse = (double)(1/3)*((p1-p2)*(p1-p2)+(p1-p3)*(p1-p3)+(p2-p3)*(p2-p3));
+			
+			if(mse <= within) {
+				return true;
+			}
+			else {
+				return false;
+			}
+		}
+		else {
+			return false;
+		}
+	} // hasConverged
+	
+	public void trainPerceptron() {
+		
+	}
+	
+	public int bestAccuracyPerceptron(ArrayList<Double> accuracyArray) {
+		int tempIndex = 0;
+		int bestIndex = 0;
+		double tempAccuracy = 0;
+		for(double bestAccuracy: accuracyArray) {
+			if(bestAccuracy > tempAccuracy) {
+				tempAccuracy = bestAccuracy;
+				bestIndex = tempIndex;
+			}
+			tempIndex++;
+		}
+		return bestIndex;
+	}
+	
+	public double checkAccuracyPerceptron(ArrayList<ArrayList<Integer>> dataSet) {
+		int match = 0;
+		for (int i = 0; i < dataSet.size(); i++) {
+			if (dataSet.get(i).get(weights.size() - 1) == calculatePerceptron(weights, dataSet.get(i))) {
+				match++;
+			}
+		}
+		double accuracy = ((double) match / (double) dataSet.size());
+		return accuracy;
+
+	}
+	
+	
+	
 	// ********************************************************
 	// MAIN
 	// ********************************************************
