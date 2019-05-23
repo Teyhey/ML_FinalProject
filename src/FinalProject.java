@@ -309,9 +309,11 @@ public class FinalProject {
 
 	// This method populates the necessary weights
 	public void populateWeights() {
+		/*
 		for (int i = 0; i < dictionary.size() + 1; i++) {
 			weights.add(0.1);
 		}
+		*/
 	} // populateWeights
 
 	public void clearWeights() {
@@ -486,6 +488,11 @@ public class FinalProject {
 	// ********************************************************
 	// MAIN
 	// ********************************************************
+	
+	
+	// This is not the code we ended up using for our results. Please
+	// look at he FinalProject.py file and run that.
+	
 
 	// Main
 	public static void main(String[] args) throws FileNotFoundException {
