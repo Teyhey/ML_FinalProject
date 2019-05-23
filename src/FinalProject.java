@@ -491,7 +491,7 @@ public class FinalProject {
 	
 	
 	// This is not the code we ended up using for our results. Please
-	// look at he FinalProject.py file and run that.
+	// look at he FinalProject.py file and run that. 
 	
 
 	// Main
